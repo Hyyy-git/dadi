@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ccic.dao.alarm.AlarmInfoRecordDao">
+
+    <resultMap id="alarmResult" type="com.ccic.entity.alarm.AlarmRecordInfo">
+        <result column="ID" property="id" jdbcType="VARCHAR"/>
+        <result column="TEMPLATEID" property="templateId" jdbcType="VARCHAR"/>
+        <result column="SYSTEM_ID" property="systemId" jdbcType="VARCHAR"/>
+        <result column="PARAMS_INFO" property="paramsInfo" jdbcType="VARCHAR"/>
+        <result column="TEMPLATE_INFO" property="templateInfo" jdbcType="VARCHAR"/>
+        <result column="FAILSEND_REASON" property="failSendReason" jdbcType="VARCHAR"/>
+        <result column="SEND_FLAG" property="sendFlag" jdbcType="INTEGER"/>
+        <result column="IS_VALID" property="isValid" jdbcType="INTEGER"/>
+        <result column="IS_DEL" property="isDel" jdbcType="INTEGER"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <insert id="addAlarmInfo" parameterType="com.ccic.entity.alarm.AlarmRecordInfo" useGeneratedKeys="false"
+            flushCache="true">
+        INSERT INTO ALARM_INFO_RECORD(
+            ID,
+            TEMPLATEID,
+            SYSTEMID,
+            PARAMS_INFO,
+            TEMPLATE_INFO,
+            FAILSEND_REASON
+        )
+        VALUES (
+            #{id,jdbcType=VARCHAR},
+            #{templateId,jdbcType=VARCHAR},
+            #{systemId,jdbcType=VARCHAR},
+            #{paramsInfo,jdbcType=VARCHAR},
+            #{templateInfo,jdbcType=VARCHAR},
+            #{failSendReason,jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="updateSendFlagById">
+        UPDATE ALARM_INFO_RECORD SET SEND_FLAG = #{sendFlag,jdbcType=INTEGER} WHERE ID = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <select id="findLastRecordByTemplateId" resultMap="alarmResult">
+        SELECT
+            ID,
+            TEMPLATEID,
+            SYSTEMID,
+            PARAMS_INFO,
+            TEMPLATE_INFO,
+            FAILSEND_REASON,
+            SEND_FLAG,
+            IS_VALID,
+            IS_DEL,
+            CREATE_TIME,
+            UPDATE_TIME
+        FROM
+            ALARM_INFO_RECORD
+        WHERE
+            CREATE_TIME=(SELECT MAX(CREATE_TIME) FROM ALARM_INFO_RECORD WHERE TEMPLATEID = #{templateId,jdbcType=VARCHAR} AND SEND_FLAG = 2) AND SEND_FLAG = 2 AND ROWNUM=1
+    </select>
+</mapper>

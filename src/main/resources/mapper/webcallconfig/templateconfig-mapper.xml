@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ccic.dao.webcallconfig.TemplateConfigDao">
+
+    <resultMap id="templateResult" type="com.ccic.entity.webcallconfig.TemplateConfig">
+        <result column="ID" property="id" jdbcType="VARCHAR"/>
+        <result column="TEMPLATEID" property="templateId" jdbcType="VARCHAR"/>
+        <result column="SYSTEM_NUMBER" property="systemNumber" jdbcType="VARCHAR"/>
+        <result column="TEMPLATE_INFO" property="templateInfo" jdbcType="VARCHAR"/>
+        <result column="CONTACTS_NAME" property="contactsName" jdbcType="VARCHAR"/>
+        <result column="TELEPHONE" property="telephone" jdbcType="VARCHAR"/>
+        <result column="MAIL" property="mail" jdbcType="VARCHAR"/>
+        <result column="WECHAT" property="wechat" jdbcType="VARCHAR"/>
+        <result column="INPUTTIME" property="inputTime" jdbcType="VARCHAR"/>
+        <result column="UPDATETIME" property="updateTime" jdbcType="VARCHAR"/>
+        <result column="STATE" property="state" jdbcType="VARCHAR"/>
+        <result column="TEMPLATENAME" property="templateName" jdbcType="VARCHAR"/>
+        <result column="SYSTEM_INFO_TYPE" property="systemInfoType" jdbcType="VARCHAR"/>
+        <result column="UPDATEUSERID" property="updateUserId" jdbcType="VARCHAR"/>
+        <result column="TIMEOUT" property="timeOut" jdbcType="VARCHAR"/>
+        <result column="TIME_STAMP" property="timeStamp" jdbcType="VARCHAR"/>
+        <result column="SIMILARITY" property="similarity" jdbcType="INTEGER"/>
+        <result column="MAIL_TYPE" property="mailType" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="templateConfigTable">
+        t.ID, t.TEMPLATEID, t.SYSTEM_NUMBER, t.TEMPLATE_INFO, t.CONTACTS_NAME, t.TELEPHONE, t.INPUTTIME, t.UPDATETIME, t.STATE,t.TEMPLATENAME,t.MAIL,t.WECHAT,
+        t.SYSTEM_INFO_TYPE,t.UPDATEUSERID,t.TIMEOUT,t.TIME_STAMP,t.SIMILARITY,t.MAIL_TYPE
+    </sql>
+
+    <select id="getSerialNo" resultType="String">
+        select TEMPLATE_CONFIG_SEQ.Nextval from dual
+    </select>
+
+    <insert id="addTemplateConfig" parameterType="com.ccic.entity.webcallconfig.TemplateConfig" useGeneratedKeys="true"
+            flushCache="true">
+        INSERT INTO TEMPLATE_CONFIG(
+	            ID,TEMPLATEID,SYSTEM_NUMBER,TEMPLATE_INFO,CONTACTS_NAME,TELEPHONE,INPUTTIME,UPDATETIME,STATE,TEMPLATENAME,SYSTEM_INFO_TYPE,
+	            UPDATEUSERID,TIMEOUT,MAIL,WECHAT,TIME_STAMP,SIMILARITY,MAIL_TYPE)
+	          VALUES (
+	            #{id},#{templateId},#{systemNumber},#{templateInfo},#{contactsName},#{telephone},#{inputTime},#{updateTime},#{state},#{templateName},
+	            #{systemInfoType},#{updateUserId},#{timeOut},#{mail},#{wechat},#{timeStamp},#{similarity},#{mailType}
+	          )
+    </insert>
+
+    <update id="deleteTemplateConfig" parameterType="com.ccic.entity.webcallconfig.TemplateConfig" flushCache="true">
+        UPDATE TEMPLATE_CONFIG
+          SET STATE =#{state}
+        WHERE TEMPLATEID = #{templateId}
+    </update>
+
+    <update id="updateTemplateConfig" parameterType="com.ccic.entity.webcallconfig.TemplateConfig" flushCache="true">
+        UPDATE TEMPLATE_CONFIG
+          SET
+            TEMPLATEID = #{templateId,jdbcType=VARCHAR},SYSTEM_NUMBER = #{systemNumber,jdbcType=VARCHAR},TEMPLATE_INFO = #{templateInfo,jdbcType=VARCHAR},
+            CONTACTS_NAME = #{contactsName,jdbcType=VARCHAR},TELEPHONE = #{telephone,jdbcType=VARCHAR},
+            UPDATETIME = #{updateTime,jdbcType=VARCHAR},STATE = #{state,jdbcType=VARCHAR},TEMPLATENAME = #{templateName,jdbcType=VARCHAR},
+            SYSTEM_INFO_TYPE = #{systemInfoType,jdbcType=VARCHAR},UPDATEUSERID = #{updateUserId,jdbcType=VARCHAR},
+            TIMEOUT = #{timeOut,jdbcType=VARCHAR},MAIL = #{mail,jdbcType=VARCHAR},WECHAT = #{wechat,jdbcType=VARCHAR},
+            TIME_STAMP = #{timeStamp,jdbcType=VARCHAR},SIMILARITY = #{similarity,jdbcType=INTEGER},MAIL_TYPE = #{mailType,jdbcType=VARCHAR}
+        WHERE  TEMPLATEID = #{templateId,jdbcType=VARCHAR}
+    </update>
+
+    <select id="queryTemplateConfig" parameterType="com.ccic.entity.webcallconfig.TemplateConfig"
+            resultMap="templateResult">
+        SELECT
+        <include refid="templateConfigTable"/>
+        FROM TEMPLATE_CONFIG t
+        WHERE 1 = 1
+        <if test="id != null and id !='' ">AND t.ID = #{id}</if>
+        <if test="templateId != null and templateId !='' ">AND t.TEMPLATEID = #{templateId}</if>
+        <if test="templateName != null and templateName !='' ">AND t.TEMPLATENAME = #{templateName}</if>
+        <if test="systemNumber != null and systemNumber !='' ">AND t.SYSTEM_NUMBER = #{systemNumber}</if>
+        <if test="state != null and state !='' ">AND t.STATE = #{state}</if>
+    </select>
+
+</mapper>

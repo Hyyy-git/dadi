@@ -1,0 +1,129 @@
+server:
+  port: 8099
+#  context-path: / #项目路径，Spring boot默认是/，这样直接通过http://ip:port/就可以访问到index页面
+
+spring:             #Spring相关配置
+ datasource:
+   url: jdbc:oracle:thin:@//10.2.3.203:1521/R2UAT16GPDB
+   username: GDBZBUSI
+   password: ${ALARM_USERPASS}
+   driver-class-name: oracle.jdbc.OracleDriver
+   type: com.alibaba.druid.pool.DruidDataSource        #数据源/连接池类型
+   initialSize: 2                                    #定义初始连接数
+   minIdle: 5                                        #定义最小空闲 minIdle=1
+   maxActive: 20                                     #定义最大连接数
+   maxWait: 60000                                    #定义最长等待时间
+   timeBetweenEvictionRunsMillis: 60000           #每60秒运行一次空闲连接回收器
+   minEvictableIdleTimeMillis: 300000             #池中的连接空闲300秒后被回收
+   validationQuery: SELECT 1 FROM DUAL             #验证使用的SQL语句
+   testWhileIdle: true                             #指明连接是否被空闲连接回收器(如果有)进行检验.如果检测失败,则连接将被从池中去除.
+   testOnBorrow: false                             #借出连接时不要测试，否则很影响性能
+   testOnReturn: false                             #归还连接时执行validationQuery检测连接是否有效，做了这个配置会降低性能
+   poolPreparedStatements: true                   #是否缓存preparedStatement，也就是PSCache。PSCache对支持游标的数据库性能提升巨大，比如说oracle。在mysql下建议关闭。
+   maxPoolPreparedStatementPerConnectionSize: 20   #指定每个连接上PSCache的大小
+   filters: config,stat,log4j                       # 配置监控统计拦截的filters，去掉后监控界面sql无法统计
+   # 通过connectProperties属性来打开mergeSql功能；慢SQL记录                                         #
+   useGlobalDataSourceStat: true                   #合并多个DruidDataSource的监控数据
+
+ http:              # 集成HttpClient,封装常用客户端工具类
+   multipart:
+     enabled: true                #是否激活
+     max-file-size: -1            #限制文件大小
+     max-request-size: -1          #限制文件大小
+ session:
+   store-type: none  #session的存储方式，目前Spring boot中只支持Redis方式。 由于本处暂无需将session放入redis的需求，故这里就可以将session store type设置为none.
+ freemarker:              #freemarker相关配置
+   enabled: true                   #是否允许mvc使用freemarker.
+   cache: false                    #是否开启template caching.
+   charset: UTF-8
+   content-type: text/html
+   template-loader-path: classpath:/templates/               #模板路径
+   suffix: .html                                               #前端文件后缀
+   request-context-attribute: request                       #指定RequestContext属性的名
+   expose-session-attributes: true                          #是否在merge模板的时候，将HttpSession属性都添加到model中
+   expose-request-attributes: true                          #设定所有request的属性在merge到模板的时候，是否要都添加到model中.
+   expose-spring-macro-helpers: true                       #是否以springMacroRequestContext的形式暴露RequestContext给Spring’s macrolibrary使用
+   allow-request-override: true                            #指定HttpServletRequest的属性是否可以覆盖controller的model的同名项
+   allow-session-override: true                            #指定HttpSession的属性是否可以覆盖controller的model的同名项
+   settings:                                                #设置集中时间类型的转化
+     date_format: yyyy-MM-dd
+     time_format: HH:mm:ss
+     datetime_format: yyyy-MM-dd HH:mm:ss
+# mvc:
+#   static-path-pattern: /static/**                         #Spring Boot处理静态资源请求的条件
+ devtools:                                                   #Spring Boot热部署配置
+   restart:
+     enabled: false                                          #是否使用重启功能
+     additional-paths: src/main/java                       #监视其他路径的更改
+     additional-exclude: target/classes                    #设置某些资源在更改时不需要触发重启
+ output:
+       ansi:
+         enabled: detect                  # 配置ANSI输出（可以是“detect”，“always”，“never”）-->“检测”，“永远”，“从不”
+ kafka:
+     producer:
+       bootstrap-servers: 10.1.11.196:9092,10.1.11.197:9092,10.1.11.199:9092
+       retries: 3
+     consumer:
+       bootstrap-servers: 10.1.11.196:9092,10.1.11.197:9092,10.1.11.199:9092
+       group-id: SYS-ALARM
+       enable-auto-commit: false
+ redis:
+      open: false
+      database: 0
+      cluster:
+           nodes:
+             - 10.1.11.199:7000
+             - 10.1.11.199:7001
+             - 10.1.11.199:7002
+      password: ccic2018
+      timeout: 6000
+      pool:
+            max-active: 100
+            max-wait: -1
+            max-idle: 10
+            min-idle: 5
+mybatis:                                                    #mybatis相关配置
+  config-location: classpath:config/mybatis-config.xml          #加载mybatis配置文件
+  mapper-locations: classpath:mapper/**/*.xml                   #映射xml文件
+
+logging:                                                            #日志相关配置
+  config: classpath:config/logback-config.xml                       #加载日志相关配置文件
+  path: /ccicall/alarmProgram/comment-log-uat/                         #日志存储路径
+  level: info                                                       #接收日志等级
+  match: ACCEPT #ACCEPT/DENY                                        #日志级别筛选策略,此除ACCEPT表示匹配到更高级别异常允许输出
+  mismatch: DENY                                                    #日志级别筛选策略,此除ACCEPT表示没有匹配到更高级别异常不允许输出
+
+http:
+  maxTotal: 100
+  defaultMaxPerRoute: 20
+  connectTimeout: 1000
+  connectionRequestTimeout: 500
+  socketTimeout: 10000
+  staleConnectionCheckEnabled: true
+
+
+sysParam:
+  encryptKey: 3a3492ff08426a0562792ff33b838456
+  callCenterID: 7600261
+  url: http://10.1.167.196:7002/interface/v10/webcall
+
+mail:
+  host: 10.1.22.166
+  username: gdgjpt
+  password: Pass01!
+  timeout: 180000
+  properties.mail.smtp.auth: true
+  properties.mail.smtp.starttls.enable: true
+  properties.mail.smtp.starttls.required: true
+  protocol: smtp
+  default-encoding: UTF-8
+  socketFactory: javax.net.ssl.SSLSocketFactory
+  debug: true
+  from: gdgjpt@ccic-net.com.cn
+
+sms:
+  url: http://10.1.11.115:8080/daditestgroup/ccicsit/SendSimpleMessageService
+
+weChat:
+  url: http://10.1.11.115:8080/daditestgroup/ccicsit/SendSimpleMessageService
+

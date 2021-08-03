@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ccic.dao.webcall.WebCallDao">
+    <resultMap id="templateResult" type="com.ccic.entity.webcall.TemplateConfig">
+        <result column="ID" property="id" jdbcType="VARCHAR"/>
+        <result column="TEMPLATEID" property="templateId" jdbcType="VARCHAR"/>
+        <result column="SYSTEM_NUMBER" property="systemNumber" jdbcType="VARCHAR"/>
+        <result column="TEMPLATE_INFO" property="templateInfo" jdbcType="VARCHAR"/>
+        <result column="CONTACTS_NAME" property="contactsName" jdbcType="VARCHAR"/>
+        <result column="TELEPHONE" property="telephone" jdbcType="VARCHAR"/>
+        <result column="INPUTTIME" property="inputTime" jdbcType="VARCHAR"/>
+        <result column="UPDATETIME" property="updateTime" jdbcType="VARCHAR"/>
+        <result column="STATE" property="state" jdbcType="VARCHAR"/>
+        <result column="TIMEOUT" property="timeout" jdbcType="VARCHAR"/>
+        <result column="SYSTEM_INFO_TYPE" property="systemInfoType" jdbcType="VARCHAR"/>
+        <result column="MAIL" property="mail" jdbcType="VARCHAR"/>
+        <result column="WECHAT" property="weChat" jdbcType="VARCHAR"/>
+        <result column="TIME_STAMP" property="timStamp" jdbcType="VARCHAR"/>
+        <result column="SIMILARITY" property="similarity" javaType="java.math.BigDecimal"/>
+        <result column="MAIL_TYPE" property="mailType" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="messageResult" type="com.ccic.entity.webcall.SendMessage">
+        <result column="ID" property="id" jdbcType="VARCHAR"/>
+        <result column="TEMPLATEID" property="templateId" jdbcType="VARCHAR"/>
+        <result column="CLID" property="clId" jdbcType="VARCHAR"/>
+        <result column="DYNAMIC_MESSAGE" property="param" jdbcType="VARCHAR"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+        <result column="REQUEST_UNIQUEID" property="requestUniqueId" jdbcType="VARCHAR"/>
+        <result column="RESULT_CODE" property="resultCode" jdbcType="VARCHAR"/>
+        <result column="URL_INFO" property="urlInfo" jdbcType="VARCHAR"/>
+        <result column="INPUTTIME" property="inputTime" jdbcType="VARCHAR"/>
+        <result column="UPDATETIME" property="updateTime" jdbcType="VARCHAR"/>
+        <result column="STATE" property="state" jdbcType="VARCHAR"/>
+        <result column="SYSTEMID" property="systemId" jdbcType="VARCHAR"/>
+        <result column="CALLSUCCESS" property="callSuccess" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="templateConfigTable">
+        t.ID, t.TEMPLATEID, t.SYSTEM_NUMBER, t.TEMPLATE_INFO, t.CONTACTS_NAME, t.TELEPHONE, t.INPUTTIME, t.UPDATETIME, t.STATE,t.TEMPLATENAME,t.TIMEOUT,t.SYSTEM_INFO_TYPE,t.TEMPLATENAME,t.MAIL,t.WECHAT,t.TIME_STAMP,t.SIMILARITY,t.MAIL_TYPE
+    </sql>
+
+    <select id="getSerialNo" resultType="String">
+        select WEBCALL_MESSAGE_INFO_SEQ .Nextval from dual
+    </select>
+
+    <select id="queryTemplateConfig" parameterType="String" resultMap="templateResult">
+        SELECT
+        <include refid="templateConfigTable"/>
+        FROM TEMPLATE_CONFIG t
+        WHERE 1 = 1
+        <if test="templateId != null and templateId !='' ">AND t.TEMPLATEID = #{templateId}</if>
+    </select>
+
+
+    <insert id="addMessageInfo" parameterType="com.ccic.entity.webcall.SendMessage" useGeneratedKeys="false"
+            flushCache="true">
+        INSERT INTO WEBCALL_MESSAGE_INFO(
+           ID,
+           TEMPLATEID,
+           CLID,
+           DYNAMIC_MESSAGE,
+           DESCRIPTION,
+           REQUEST_UNIQUEID,
+           RESULT_CODE,
+           URL_INFO,
+           INPUTTIME,
+           UPDATETIME,
+           STATE,
+           SYSTEMID,
+           CALL_NUMBER,
+           MESSAGE_TYPE
+        )
+        VALUES (
+            #{id,jdbcType=VARCHAR},
+            #{templateId,jdbcType=VARCHAR},
+            #{clId,jdbcType=VARCHAR},
+            #{param,jdbcType=VARCHAR},
+            #{description,jdbcType=VARCHAR},
+            #{requestUniqueId,jdbcType=VARCHAR},
+            #{resultCode,jdbcType=VARCHAR},
+            #{urlInfo,jdbcType=VARCHAR},
+            #{inputTime,jdbcType=VARCHAR},
+            #{updateTime,jdbcType=VARCHAR},
+            #{state,jdbcType=VARCHAR},
+            #{systemId,jdbcType=VARCHAR},
+            #{callNumber,jdbcType=VARCHAR},
+            #{messageType,jdbcType=VARCHAR})
+    </insert>
+
+    <update id="updateMessageInfo" parameterType="com.ccic.entity.webcall.SendMessage" flushCache="false">
+        UPDATE WEBCALL_MESSAGE_INFO
+        <trim prefix="set" suffixOverrides=",">
+            <if test="resultCode != null">RESULT_CODE = #{resultCode},</if>
+            <if test="description != null">DESCRIPTION = #{description},</if>
+            <if test="clId != null">CLID = #{clId},</if>
+            <if test="requestUniqueId != null">REQUEST_UNIQUEID = #{requestUniqueId},</if>
+            STATE = #{state},
+            UPDATETIME = #{updateTime}
+        </trim>
+        WHERE ID = #{id} AND TEMPLATEID = #{templateId}
+    </update>
+
+    <select id="queryMessage" parameterType="String" resultMap="messageResult">
+        SELECT
+        ID,
+        TEMPLATEID,
+        CLID,
+        DYNAMIC_MESSAGE,
+        DESCRIPTION,
+        REQUEST_UNIQUEID,
+        RESULT_CODE,
+        URL_INFO,
+        INPUTTIME,
+        UPDATETIME,
+        STATE,
+        SYSTEMID,
+        CALLSUCCESS
+        FROM
+        WEBCALL_MESSAGE_INFO
+        WHERE
+        1 = 1
+        <if test="updateTime != null and updateTime !='' ">AND UPDATETIME &gt; #{updateTime} AND UPDATETIME &lt; (select
+            to_char(sysdate,'yyyy-mm-dd hh24:mi:ss') from dual) AND REQUEST_UNIQUEID IS NOT NULL
+        </if>
+
+    </select>
+
+    <update id="updateMessage" parameterType="java.util.List" flushCache="false">
+        <foreach collection="list" item="item" index="index" open="begin" close=";end;" separator=";" >
+            update WEBCALL_MESSAGE_INFO
+            <set>
+                CALLSUCCESS = #{item.callSuccess}
+            </set>
+            where REQUEST_UNIQUEID = #{item.requestUniqueId}
+        </foreach>
+    </update>
+
+</mapper>
